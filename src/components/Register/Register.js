@@ -10,8 +10,11 @@ class Register extends React.PureComponent {
       name: "",
       email: '',
       password: '',
+      errors: {},
+      isValid: false
     }
     this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.props.handleSubmit.bind(this);
   }
 
   handleChange(e) {
@@ -19,6 +22,12 @@ class Register extends React.PureComponent {
     this.setState({
       [name]: value
     });
+    this.setState({
+      errors: {
+        [name]: e.target.validationMessage
+      }
+    });
+    this.setState({ isValid: e.target.closest("form").checkValidity() });
   }
 
   render() {
@@ -29,7 +38,9 @@ class Register extends React.PureComponent {
             <img className='auth__logo' src={logo} alt="логотип" />
           </Link>
           <h2 className='auth-form__title'>Добро пожаловать!</h2>
-          <AuthForm handleChange={this.handleChange} buttonText="Зарегистрироваться" isRegister="true" />
+          <AuthForm handleChange={this.handleChange} buttonText="Зарегистрироваться" isRegister="true"
+            handleSubmit={this.handleSubmit} isValid={this.state.isValid} errors={this.state.errors}
+            authError={this.props.authError} isLoading={this.props.isLoading} />
           <p className='auth__paragraph'>Уже зарегистрированы?
             <Link to="/signin" className='auth__link'> Войти</Link>
           </p>

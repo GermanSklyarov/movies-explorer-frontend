@@ -16,9 +16,13 @@
 .movies__card-title {
   margin: 0 0 9px 0;
   padding: 0;
+  max-width: 200px;
   font-weight: 500;
   font-size: 15px;
   line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .movies__card-duration {

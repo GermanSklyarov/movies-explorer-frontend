@@ -3,14 +3,17 @@ import { Link, withRouter } from 'react-router-dom';
 import AuthForm from '../AuthForm/AuthForm';
 import logo from '../../images/logo.svg';
 
-class Register extends React.PureComponent {
+class Login extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
       email: '',
       password: '',
+      errors: {},
+      isValid: false
     }
     this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.props.handleSubmit.bind(this);
   }
 
   handleChange(e) {
@@ -18,6 +21,12 @@ class Register extends React.PureComponent {
     this.setState({
       [name]: value
     });
+    this.setState({
+      errors: {
+        [name]: e.target.validationMessage
+      }
+    });
+    this.setState({ isValid: e.target.closest("form").checkValidity() });
   }
 
   render() {
@@ -28,7 +37,9 @@ class Register extends React.PureComponent {
             <img className='auth__logo' src={logo} alt="логотип" />
           </Link>
           <h2 className='auth-form__title'>Рады видеть!</h2>
-          <AuthForm handleChange={this.handleChange} buttonText="Войти" />
+          <AuthForm handleChange={this.handleChange} isValid={this.state.isValid} errors={this.state.errors}
+            handleSubmit={this.handleSubmit} authError={this.props.authError} isLoading={this.props.isLoading}
+            buttonText="Войти" />
           <p className='auth__paragraph'>Ещё не зарегистрированы?
             <Link to="/signup" className='auth__link'> Регистрация</Link>
           </p>
@@ -38,4 +49,4 @@ class Register extends React.PureComponent {
   }
 }
 
-export default withRouter(Register);
+export default withRouter(Login);

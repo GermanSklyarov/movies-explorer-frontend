@@ -1,15 +1,19 @@
 import MoviesCard from '../MoviesCard/MoviesCard';
+import Preloader from '../Preloader/Preloader';
 
-function MoviesCardList({ cards, isSavedMovies }) {
+function MoviesCardList({ cards, renderedCards, isAllCardsRendered, isSavedMovies, onButtonClick, isLoading, handleCardButtonClick, savedMovies }) {
   return (
     <section className="movies">
       <ul className="movies__card-list">
-        {cards.map((card) => (
-          <MoviesCard key={card.movieId} card={card} isSavedMovies={isSavedMovies} />
-        ))
+        {isLoading && <Preloader />}
+        {!isLoading && (renderedCards.length > 0) &&
+          renderedCards.map((card) => (
+            <MoviesCard key={card.id} card={card} isSavedMovies={isSavedMovies} handleCardButtonClick={handleCardButtonClick} savedMovies={savedMovies} />
+          ))
         }
-        {(cards.length > 3 && !isSavedMovies) &&
-          <button type='button' className='movies__card-list-button'>Ещё</button>
+        {(renderedCards.length === 0) && <h2 className='movies__card-list-text'>Ничего не найдено</h2>}
+        {(cards.length > 3 && !isSavedMovies && !isAllCardsRendered) &&
+          <button type='button' className='movies__card-list-button' onClick={onButtonClick}>Ещё</button>
         }
       </ul>
     </section>
