@@ -1,5 +1,5 @@
-import SearchForm from '../SearchForm/SearchForm';
-import MoviesCardList from '../MoviesCardList/MoviesCardList';
+import SearchForm from "../SearchForm/SearchForm";
+import MoviesCardList from "../MoviesCardList/MoviesCardList";
 
 function SavedMovies({
   cards,
@@ -8,14 +8,23 @@ function SavedMovies({
   handleSubmit,
   handleCheckboxChange,
   isLoading,
-  isSavedCheckboxChecked
+  isSavedCheckboxChecked,
 }) {
   return (
     <>
-      <SearchForm handleSubmit={handleSubmit} handleCheckboxChange={handleCheckboxChange}
-        isSavedMovies="true" isCheckboxChecked={isSavedCheckboxChecked} />
-      <MoviesCardList cards={cards} renderedCards={foundSavedCards} isSavedMovies="true"
-        handleCardButtonClick={handleDelete} isLoading={isLoading} />
+      <SearchForm
+        handleSubmit={handleSubmit}
+        handleCheckboxChange={handleCheckboxChange}
+        isSavedMovies="true"
+        isCheckboxChecked={isSavedCheckboxChecked}
+      />
+      <MoviesCardList
+        cards={cards}
+        renderedCards={foundSavedCards}
+        isSavedMovies="true"
+        handleCardButtonClick={handleDelete}
+        isLoading={isLoading}
+      />
     </>
   );
 }

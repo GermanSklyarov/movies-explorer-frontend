@@ -1,38 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { Route, Switch, withRouter, useHistory, Redirect } from 'react-router-dom';
-import './App.css';
-import Header from '../Header/Header';
-import Main from '../Main/Main';
-import Footer from '../Footer/Footer';
-import Movies from '../Movies/Movies';
-import SavedMovies from "../SavedMovies/SavedMovies"
-import Register from '../Register/Register';
-import Login from '../Login/Login';
-import Profile from '../Profile/Profile';
-import NotFound from '../NotFound/NotFound';
-import mainApi from '../../utils/MainApi';
-import moviesApi from '../../utils/MoviesApi';
-import ProtectedRoute from '../ProtectedRoute/ProtectedRoute';
-import InfoTooltip from '../InfoTooltip/InfoTooltip';
-import { CurrentUserContext } from '../../contexts/CurrentUserContext';
+import React, { useState, useEffect } from "react";
+import {
+  Route,
+  Switch,
+  withRouter,
+  useHistory,
+  Redirect,
+} from "react-router-dom";
+import "./App.css";
+import Header from "../Header/Header";
+import Main from "../Main/Main";
+import Footer from "../Footer/Footer";
+import Movies from "../Movies/Movies";
+import SavedMovies from "../SavedMovies/SavedMovies";
+import Register from "../Register/Register";
+import Login from "../Login/Login";
+import Profile from "../Profile/Profile";
+import NotFound from "../NotFound/NotFound";
+import mainApi from "../../utils/MainApi";
+import moviesApi from "../../utils/MoviesApi";
+import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
+import InfoTooltip from "../InfoTooltip/InfoTooltip";
+import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
-  const [loggedIn, setLoggedIn] = useState(Boolean(localStorage.getItem('jwt')));
+  const [loggedIn, setLoggedIn] = useState(
+    Boolean(localStorage.getItem("jwt"))
+  );
   const [cards, setCards] = useState([]);
-  const [isCheckboxChecked, setIsCheckboxChecked] = useState(localStorage.getItem("isCheckboxChecked") ? JSON.parse(localStorage.getItem("isCheckboxChecked")) : false);
+  const [isCheckboxChecked, setIsCheckboxChecked] = useState(
+    localStorage.getItem("isCheckboxChecked")
+      ? JSON.parse(localStorage.getItem("isCheckboxChecked"))
+      : false
+  );
   const [isSavedCheckboxChecked, setIsSavedCheckboxChecked] = useState(false);
   const [isAllCardsRendered, setIsAllCardsRendered] = useState(false);
-  const [foundCards, setFoundCards] = useState(localStorage.getItem("foundCards") ? JSON.parse(localStorage.getItem("foundCards")) : []);
-  const [renderedCards, setRenderedCards] = useState(renderCards(localStorage.getItem("foundCards") ? JSON.parse(localStorage.getItem("foundCards")) : []));
+  const [foundCards, setFoundCards] = useState(
+    localStorage.getItem("foundCards")
+      ? JSON.parse(localStorage.getItem("foundCards"))
+      : []
+  );
+  const [cardsBeforeFilter, setCardsBeforeFilter] = useState(
+    localStorage.getItem("cardsBeforeFilter")
+      ? JSON.parse(localStorage.getItem("cardsBeforeFilter"))
+      : []
+  );
+  const [renderedCards, setRenderedCards] = useState(
+    renderCards(
+      localStorage.getItem("foundCards")
+        ? JSON.parse(localStorage.getItem("foundCards"))
+        : []
+    )
+  );
   const [savedCards, setSavedCards] = useState([]);
+  const [savedCardsBeforeFilter, setSavedCardsBeforeFilter] = useState([]);
   const [foundSavedCards, setFoundSavedCards] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
-  const [registerError, setRegisterError] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [updateError, setUpdateError] = useState('');
+  const [registerError, setRegisterError] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [updateError, setUpdateError] = useState("");
   const [isEdit, setIsEdit] = useState(false);
   const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false);
   const history = useHistory();
@@ -43,11 +71,18 @@ function App() {
         setCards(cards);
         setSavedCards(savedCards);
         setFoundSavedCards(savedCards);
+        setSavedCardsBeforeFilter(savedCards);
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
+
+  useEffect(() => {
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  });
 
   useEffect(() => {
     if (JSON.parse(localStorage.getItem("foundCards"))) {
@@ -57,7 +92,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("isCheckboxChecked", JSON.stringify(isCheckboxChecked));
+    localStorage.setItem(
+      "isCheckboxChecked",
+      JSON.stringify(isCheckboxChecked)
+    );
   }, [isCheckboxChecked]);
 
   useEffect(() => {
@@ -73,11 +111,19 @@ function App() {
   }, [loggedIn]);
 
   useEffect(() => {
-    setFoundCards(foundCards.filter(movie => movie.duration <= 40));
+    if (isCheckboxChecked) {
+      setFoundCards(foundCards.filter((movie) => movie.duration <= 40));
+    } else {
+      setFoundCards(cardsBeforeFilter);
+    }
   }, [isCheckboxChecked]);
 
   useEffect(() => {
-    setFoundSavedCards(foundSavedCards.filter(card => card.duration <= 40));
+    if (isSavedCheckboxChecked) {
+      setFoundSavedCards(foundSavedCards.filter((card) => card.duration <= 40));
+    } else {
+      setFoundSavedCards(savedCardsBeforeFilter);
+    }
   }, [isSavedCheckboxChecked]);
 
   useEffect(() => {
@@ -94,13 +140,15 @@ function App() {
   }, [savedCards]);
 
   function tokenCheck() {
-    const jwt = localStorage.getItem('jwt');
+    const jwt = localStorage.getItem("jwt");
     if (jwt) {
-      mainApi.getContent(jwt).then((res) => {
-        if (res) {
-          setLoggedIn(true);
-        }
-      })
+      mainApi
+        .getContent(jwt)
+        .then((res) => {
+          if (res) {
+            setLoggedIn(true);
+          }
+        })
         .catch((err) => {
           console.log(err);
         });
@@ -108,21 +156,24 @@ function App() {
   }
 
   function signOut() {
-    mainApi.logout()
+    mainApi
+      .logout()
       .then(() => {
         setLoggedIn(false);
-        localStorage.removeItem('jwt');
+        localStorage.removeItem("jwt");
         localStorage.removeItem("foundCards");
+        localStorage.removeItem("cardsBeforeFilter");
         localStorage.removeItem("isCheckboxChecked");
         localStorage.removeItem("searchInputValue");
         setFoundCards([]);
+        setCardsBeforeFilter([]);
         setIsCheckboxChecked(false);
         setIsSearch(false);
-        history.push('/');
+        history.push("/");
       })
       .catch((err) => {
         console.log(err);
-      })
+      });
   }
 
   function handleLogin() {
@@ -135,20 +186,24 @@ function App() {
     if (!this.state.email || !this.state.password) {
       return;
     }
-    mainApi.authorize(this.state.password, this.state.email)
+    mainApi
+      .authorize(this.state.password, this.state.email)
       .then((data) => {
         if (data.token) {
-          this.setState({
-            email: '',
-            password: ''
-          }, () => {
-            this.props.handleLogin();
-            this.props.history.push('/movies');
-          })
+          this.setState(
+            {
+              email: "",
+              password: "",
+            },
+            () => {
+              this.props.handleLogin();
+              this.props.history.push("/movies");
+            }
+          );
         }
       })
-      .catch(err => {
-        setLoginError(err)
+      .catch((err) => {
+        setLoginError(err);
       })
       .finally(() => setIsLoading(false));
   }
@@ -157,23 +212,29 @@ function App() {
     e.preventDefault();
     setIsLoading(true);
     const { password, email, name } = this.state;
-    mainApi.register(password, email, name).then((res) => {
-      if (res) {
-        mainApi.authorize(password, res.email)
-          .then((data) => {
-            if (data.token) {
-              this.setState({
-                email: '',
-                password: ''
-              }, () => {
-                setLoggedIn(true);
-                this.props.history.push('/movies');
-              })
-            }
-          })
-      }
-    }
-    )
+    mainApi
+      .register(password, email, name)
+      .then((res) => {
+        if (res) {
+          mainApi
+            .authorize(password, res.email)
+            .then((data) => {
+              if (data.token) {
+                this.setState(
+                  {
+                    email: "",
+                    password: "",
+                  },
+                  () => {
+                    setLoggedIn(true);
+                    this.props.history.push("/movies");
+                  }
+                );
+              }
+            })
+            .catch((err) => setRegisterError(err));
+        }
+      })
       .catch((err) => {
         setRegisterError(err);
       })
@@ -185,8 +246,12 @@ function App() {
       return false;
     }
     setIsLoading(true);
-    mainApi.setUserInfo({ name: name || currentUser.name, email: email || currentUser.email })
-      .then(res => {
+    mainApi
+      .setUserInfo({
+        name: name || currentUser.name,
+        email: email || currentUser.email,
+      })
+      .then((res) => {
         setIsInfoTooltipOpen(true);
         setCurrentUser(res);
         setIsEdit(false);
@@ -233,7 +298,11 @@ function App() {
       setRenderedCards(foundCards.slice(0, renderedCards.length + 3));
       return;
     }
-    if (screenWidth >= 768 && screenWidth < 1280 && foundCards.length - renderedCards.length > 2) {
+    if (
+      screenWidth >= 768 &&
+      screenWidth < 1280 &&
+      foundCards.length - renderedCards.length > 2
+    ) {
       setRenderedCards(foundCards.slice(0, renderedCards.length + 2));
       return;
     }
@@ -247,20 +316,32 @@ function App() {
 
   function handleFindMoviesFormSubmit(keyword) {
     setIsSearch(true);
-    let moviesCards = cards.filter((card) => card.nameRU.toLowerCase().includes(keyword.toLowerCase()));
+    let moviesCards = cards.filter((card) =>
+      card.nameRU.toLowerCase().includes(keyword.toLowerCase())
+    );
+    setCardsBeforeFilter(moviesCards);
+    localStorage.setItem("cardsBeforeFilter", JSON.stringify(moviesCards));
     if (isCheckboxChecked) {
-      moviesCards = moviesCards.filter(movie => movie.duration <= 40);
+      moviesCards = moviesCards.filter((movie) => movie.duration <= 40);
     }
     setFoundCards(moviesCards);
-    localStorage.setItem('foundCards', JSON.stringify(moviesCards));
-    localStorage.setItem('searchInputValue', JSON.stringify(keyword));
-    localStorage.setItem('isCheckboxChecked', JSON.stringify(isCheckboxChecked));
+    localStorage.setItem("foundCards", JSON.stringify(moviesCards));
+    localStorage.setItem("searchInputValue", JSON.stringify(keyword));
+    localStorage.setItem(
+      "isCheckboxChecked",
+      JSON.stringify(isCheckboxChecked)
+    );
   }
 
   function handleFindSavedMoviesFormSubmit(keyword) {
-    let filteredSavedCards = savedCards.filter((card) => card.nameRU.toLowerCase().includes(keyword.toLowerCase()));
+    let filteredSavedCards = savedCards.filter((card) =>
+      card.nameRU.toLowerCase().includes(keyword.toLowerCase())
+    );
+    setSavedCardsBeforeFilter(filteredSavedCards);
     if (isSavedCheckboxChecked) {
-      filteredSavedCards = filteredSavedCards.filter(movie => movie.duration <= 40);
+      filteredSavedCards = filteredSavedCards.filter(
+        (movie) => movie.duration <= 40
+      );
     }
     setFoundSavedCards(filteredSavedCards);
   }
@@ -275,19 +356,20 @@ function App() {
 
   function handleSaveCard(card) {
     setIsLoading(true);
-    mainApi.saveCard({
-      country: card.country || "-",
-      director: card.director || "-",
-      duration: card.duration,
-      year: card.year,
-      description: card.description || "-",
-      image: `https://api.nomoreparties.co/${card.image.url}`,
-      trailerLink: card.trailerLink,
-      nameRU: card.nameRU,
-      nameEN: card.nameEN || "=",
-      thumbnail: `https://api.nomoreparties.co/${card.image.formats.thumbnail.url}`,
-      movieId: card.id
-    })
+    mainApi
+      .saveCard({
+        country: card.country || "-",
+        director: card.director || "-",
+        duration: card.duration,
+        year: card.year,
+        description: card.description || "-",
+        image: `https://api.nomoreparties.co/${card.image.url}`,
+        trailerLink: card.trailerLink,
+        nameRU: card.nameRU,
+        nameEN: card.nameEN || "=",
+        thumbnail: `https://api.nomoreparties.co/${card.image.formats.thumbnail.url}`,
+        movieId: card.id,
+      })
       .then((res) => {
         setSavedCards([...savedCards, res]);
       })
@@ -301,10 +383,15 @@ function App() {
 
   function handleDeleteCard(card) {
     setIsLoading(true);
-    const cardId = card._id ? card._id : savedCards.find((savedCard) => savedCard.movieId === card.id)._id;
-    mainApi.deleteCard(cardId)
+    const cardId = card._id
+      ? card._id
+      : savedCards.find((savedCard) => savedCard.movieId === card.id)._id;
+    mainApi
+      .deleteCard(cardId)
       .then(() => {
-        setSavedCards(savedCards.filter((savedCard) => savedCard._id !== cardId));
+        setSavedCards(
+          savedCards.filter((savedCard) => savedCard._id !== cardId)
+        );
       })
       .catch((err) => {
         console.log(err);
@@ -322,86 +409,139 @@ function App() {
     }
   }
 
-  window.addEventListener('resize', () => {
+  function handleResize() {
     setTimeout(() => setRenderedCards(renderCards(foundCards)), 200);
-  });
+  }
+
+  window.addEventListener("resize", handleResize);
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <Switch>
         <Route exact path="/">
           <div className="App">
-            <Header loggedIn={loggedIn} isMenuOpen={isMenuOpen} onMenuClick={handleMenuClick} onClose={closeMenu} />
+            <Header
+              loggedIn={loggedIn}
+              isMenuOpen={isMenuOpen}
+              onMenuClick={handleMenuClick}
+              onClose={closeMenu}
+            />
             <Main />
             <Footer />
           </div>
         </Route>
-        <ProtectedRoute path="/movies"
+        <ProtectedRoute
+          path="/movies"
           loggedIn={loggedIn}
           component={() => {
             return (
-              <div className='App'>
-                <Header loggedIn={loggedIn} isMenuOpen={isMenuOpen} onMenuClick={handleMenuClick} onClose={closeMenu} />
-                <Movies handleFindMoviesFormSubmit={handleFindMoviesFormSubmit} handleCheckboxChange={handleCheckboxChange}
-                  cards={cards} renderedCards={renderedCards} isAllCardsRendered={isAllCardsRendered} onButtonClick={onButtonClick}
-                  isLoading={isLoading} handleSaveCard={handleCardButtonClick} savedMovies={savedCards} isSearch={isSearch}
-                  isCheckboxChecked={isCheckboxChecked} />
+              <div className="App">
+                <Header
+                  loggedIn={loggedIn}
+                  isMenuOpen={isMenuOpen}
+                  onMenuClick={handleMenuClick}
+                  onClose={closeMenu}
+                />
+                <Movies
+                  handleFindMoviesFormSubmit={handleFindMoviesFormSubmit}
+                  handleCheckboxChange={handleCheckboxChange}
+                  cards={cards}
+                  renderedCards={renderedCards}
+                  isAllCardsRendered={isAllCardsRendered}
+                  onButtonClick={onButtonClick}
+                  isLoading={isLoading}
+                  handleSaveCard={handleCardButtonClick}
+                  savedMovies={savedCards}
+                  isSearch={isSearch}
+                  isCheckboxChecked={isCheckboxChecked}
+                />
                 <Footer />
               </div>
-            )
-          }
-          } />
-        <ProtectedRoute path="/saved-movies"
+            );
+          }}
+        />
+        <ProtectedRoute
+          path="/saved-movies"
           loggedIn={loggedIn}
           component={() => {
             return (
-              <div className='App'>
-                <Header loggedIn={loggedIn} isMenuOpen={isMenuOpen} onMenuClick={handleMenuClick} onClose={closeMenu} />
-                <SavedMovies cards={savedCards} handleDelete={handleDeleteCard} foundSavedCards={foundSavedCards}
-                  handleSubmit={handleFindSavedMoviesFormSubmit} handleCheckboxChange={handleSavedCheckboxChange}
-                  isLoading={isLoading} isSavedCheckboxChecked={isSavedCheckboxChecked} />
+              <div className="App">
+                <Header
+                  loggedIn={loggedIn}
+                  isMenuOpen={isMenuOpen}
+                  onMenuClick={handleMenuClick}
+                  onClose={closeMenu}
+                />
+                <SavedMovies
+                  cards={savedCards}
+                  handleDelete={handleDeleteCard}
+                  foundSavedCards={foundSavedCards}
+                  handleSubmit={handleFindSavedMoviesFormSubmit}
+                  handleCheckboxChange={handleSavedCheckboxChange}
+                  isLoading={isLoading}
+                  isSavedCheckboxChecked={isSavedCheckboxChecked}
+                />
                 <Footer />
               </div>
-            )
-          }
-          } />
+            );
+          }}
+        />
         <Route path="/signup">
           {loggedIn && <Redirect to="/" />}
-          <div className='App'>
-            <Register handleSubmit={handleRegisterSubmit} authError={registerError} isLoading={isLoading} />
+          <div className="App">
+            <Register
+              handleSubmit={handleRegisterSubmit}
+              authError={registerError}
+              isLoading={isLoading}
+            />
           </div>
         </Route>
         <Route path="/signin">
           {loggedIn && <Redirect to="/" />}
-          <div className='App'>
-            <Login handleLogin={handleLogin} handleSubmit={handleLoginSubmit} authError={loginError} isLoading={isLoading} />
+          <div className="App">
+            <Login
+              handleLogin={handleLogin}
+              handleSubmit={handleLoginSubmit}
+              authError={loginError}
+              isLoading={isLoading}
+            />
           </div>
         </Route>
-        <ProtectedRoute path='/profile'
-          loggedIn={loggedIn}
-          component={() => {
-            return (
-              <div className='App'>
-                <Header loggedIn={loggedIn} isMenuOpen={isMenuOpen} onMenuClick={handleMenuClick} onClose={closeMenu} />
-                <Profile signOut={signOut} isLoading={isLoading} isEdit={isEdit} onClick={onEditClick} updateError={updateError}
-                  handleSubmit={handleUpdateUser} />
-                <InfoTooltip isOpen={isInfoTooltipOpen} onClose={closeInfoTooltip} />
-              </div>
-            )
-          }
-          } />
         <ProtectedRoute
+          path="/profile"
           loggedIn={loggedIn}
           component={() => {
             return (
-              <div className='App'>
-                <NotFound />
+              <div className="App">
+                <Header
+                  loggedIn={loggedIn}
+                  isMenuOpen={isMenuOpen}
+                  onMenuClick={handleMenuClick}
+                  onClose={closeMenu}
+                />
+                <Profile
+                  signOut={signOut}
+                  isLoading={isLoading}
+                  isEdit={isEdit}
+                  onClick={onEditClick}
+                  updateError={updateError}
+                  handleSubmit={handleUpdateUser}
+                />
+                <InfoTooltip
+                  isOpen={isInfoTooltipOpen}
+                  onClose={closeInfoTooltip}
+                />
               </div>
-            )
-          }
-          } />
+            );
+          }}
+        />
+        <Route>
+          <div className="App">
+            <NotFound />
+          </div>
+        </Route>
       </Switch>
-    </CurrentUserContext.Provider >
+    </CurrentUserContext.Provider>
   );
 }
 
