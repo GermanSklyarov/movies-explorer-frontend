@@ -1,38 +1,37 @@
-import SearchForm from '../SearchForm/SearchForm';
-import MoviesCardList from '../MoviesCardList/MoviesCardList';
-import movieImage from '../../images/movie.png';
+import SearchForm from "../SearchForm/SearchForm";
+import MoviesCardList from "../MoviesCardList/MoviesCardList";
 
-function Movies() {
-  const cards = [
-    {
-      'nameRU': '33 слова о дизайне',
-      'duration': '1ч 47м',
-      'image': movieImage,
-      'movieId': '1'
-    },
-    {
-      'nameRU': '33 слова о дизайне',
-      'duration': '1ч 47м',
-      'image': movieImage,
-      'movieId': '2'
-    },
-    {
-      'nameRU': '33 слова о дизайне',
-      'duration': '1ч 47м',
-      'image': movieImage,
-      'movieId': '3'
-    },
-    {
-      'nameRU': '33 слова о дизайне',
-      'duration': '1ч 47м',
-      'image': movieImage,
-      'movieId': '4'
-    }
-  ];
+function Movies({
+  handleFindMoviesFormSubmit,
+  handleCheckboxChange,
+  cards,
+  renderedCards,
+  isAllCardsRendered,
+  onButtonClick,
+  isLoading,
+  handleSaveCard,
+  savedMovies,
+  isSearch,
+  isCheckboxChecked,
+}) {
   return (
     <>
-      <SearchForm />
-      <MoviesCardList cards={cards} />
+      <SearchForm
+        handleSubmit={handleFindMoviesFormSubmit}
+        handleCheckboxChange={handleCheckboxChange}
+        isCheckboxChecked={isCheckboxChecked}
+      />
+      {isSearch && (
+        <MoviesCardList
+          cards={cards}
+          renderedCards={renderedCards}
+          isAllCardsRendered={isAllCardsRendered}
+          onButtonClick={onButtonClick}
+          isLoading={isLoading}
+          handleCardButtonClick={handleSaveCard}
+          savedMovies={savedMovies}
+        />
+      )}
     </>
   );
 }

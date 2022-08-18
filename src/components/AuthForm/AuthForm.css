@@ -41,12 +41,24 @@
   margin-bottom: auto;
 }
 
+.auth-form__submit-error {
+  margin: auto 0 20px 0;
+  display: block;
+  min-height: 14px;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 13px;
+  color: #EE3465;
+  text-align: center;
+}
+
 .auth-form__submit {
-  margin: auto 0 0 0;
+  margin: 0;
   padding: 14px 0;
   width: 100%;
   background: #FF6838;
   border-radius: 3px;
+  border: none;
   text-align: center;
   font-weight: 500;
   font-size: 14px;
@@ -60,6 +72,16 @@
 
 .auth-form__submit:hover {
   opacity: 0.6;
+}
+
+.auth-form__submit_disabled {
+  background-color: #F8F8F8;
+  color: #C2C2C2;
+  cursor: default;
+}
+
+.auth-form__submit_disabled:hover {
+  opacity: 1;
 }
 
 @media screen and (max-width: 767px) {
